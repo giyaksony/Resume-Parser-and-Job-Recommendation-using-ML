@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job Recommendations</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .main-wrapper {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Left Panel - Career Profile */
+        .left-panel {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e3e8f0 100%);
+            padding: 2rem;
+        }
+
+        .left-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--bg-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            background: white;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: var(--bg-gradient);
+            border: none;
+            padding: 1.5rem;
+            color: white;
+        }
+
+        .card-header h4 {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .info-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .info-item:hover {
+            padding-left: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .qualification-text {
+            color: #374151;
+            font-size: 1rem;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+            display: inline-block;
+        }
+
+        .badge-skill {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Right Panel - Job Recommendations */
+        .right-panel {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #e3e8f0 0%, #c3cfe2 100%);
+            padding: 2rem;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-back {
+            background: white;
+            color: #4b5563;
+            border: 2px solid #e5e7eb;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .btn-back:hover {
+            background: var(--bg-gradient);
+            color: white;
+            border-color: transparent;
+            transform: translateX(-4px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .btn-exit {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: 2px solid transparent;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+        }
+
+        .btn-exit:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .jobs-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .jobs-table {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .table-wrapper {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background: var(--bg-gradient);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.05em;
+            padding: 1.25rem 1.5rem;
+            border: none;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .table tbody tr:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            transform: scale(1.01);
+        }
+
+        .table tbody td {
+            padding: 1.25rem 1.5rem;
+            vertical-align: middle;
+            color: #374151;
+        }
+
+        .score-badge {
+            background: var(--bg-gradient);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            display: inline-block;
+            min-width: 70px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .table tbody tr:hover .score-badge {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem;
+        }
+
+        /* Custom Scrollbar */
+        .card-body::-webkit-scrollbar,
+        .table-wrapper::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .card-body::-webkit-scrollbar-track,
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .card-body::-webkit-scrollbar-thumb,
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .card-body::-webkit-scrollbar-thumb:hover,
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- Left Panel - Career Profile -->
+        <div class="left-panel">
+            <div class="left-content">
+                <div class="profile-header">
+                    <h1>Your Career Profile</h1>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Resume Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <div class="info-label">Name</div>
+                            <div class="qualification-text">{{ name }}</div>
+                        </div>
+
+                        <!-- <div class="info-item">
+                            <div class="info-label">Qualification</div>
+                            <div class="qualification-text">
+                                {% if qualification %}
+                                    {{ qualification | join(", ") }}
+                                {% else %}
+                                    Not Available
+                                {% endif %}
+                            </div>
+                        </div> -->
+
+                        <div class="info-item">
+                            <div class="info-label">Skills</div>
+                            <div>
+                                {% if skills %}
+                                    {% for skill in skills %}
+                                        <span class="badge badge-skill">{{ skill }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">Not Available</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Job Recommendations -->
+        <div class="right-panel">
+            <div class="top-bar">
+                <a href="{{ url_for('index') }}" class="btn-back">
+                    <span>←</span>
+                    <span>Back to Home</span>
+                </a>
+                <button onclick="exitPage()" class="btn-exit">
+                    <span>Exit</span>
+                    <span>✕</span>
+                </button>
+            </div>
+
+            <div class="jobs-card">
+                {% if joblist %}
+                    <div class="jobs-table">
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Job Title</th>
+                                        <th style="width: 150px; text-align: center;">Match Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job, score in joblist %}
+                                        <tr>
+                                            <td><strong>{{ job }}</strong></td>
+                                            <td style="text-align: center;">
+                                                <span class="score-badge">{{ score }}%</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <strong>No job recommendations available.</strong> Please update your profile to get personalized recommendations.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function exitPage() {
+            // Option 1: Go back to home page
+            window.location.href = '/';
+            
+            // Option 2: Go back in browser history
+            // window.history.back();
+            
+            // Option 3: Close window (only works if opened by JavaScript)
+            // window.close();
+        }
+    </script>
+</body>
+</html>

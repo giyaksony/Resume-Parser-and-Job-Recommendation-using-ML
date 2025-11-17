@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Parser & Job Suggestions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: #0a0a0a;
+        }
+
+        /* Scroll down indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+
+        .scroll-indicator-inner {
+            width: 30px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            border-radius: 25px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .scroll-indicator-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scrollDot 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        @keyframes scrollDot {
+            0% { top: 10px; opacity: 1; }
+            100% { top: 30px; opacity: 0; }
+        }
+
+        /* Section 1 */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float-particle 15s infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+
+        .section-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 60px;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: fadeInUp 1s ease forwards;
+            z-index: 10;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content {
+            flex: 1;
+            color: white;
+        }
+
+        .tagline {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+        }
+
+        .title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            color: #ffffff;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .file-upload-section {
+            margin-bottom: 30px;
+        }
+
+        /* Custom File Upload */
+        .file-upload-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .file-input {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 16px;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload-label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .file-upload-label:hover::before {
+            left: 100%;
+        }
+
+        .file-upload-label:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .file-icon {
+            font-size: 24px;
+        }
+
+        .file-text {
+            flex: 1;
+        }
+
+        .file-name {
+            display: block;
+            margin-top: 10px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+        }
+
+        .cta-button {
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #1a1a2e;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .cta-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 255, 136, 0.6);
+        }
+
+        .cta-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+            margin-top: 30px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        .dot:nth-child(4) { animation-delay: 0.6s; }
+        .dot:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        .visual {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Section 1 Visual */
+        .browser-window {
+            width: 500px;
+            height: 350px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(2deg); }
+        }
+
+        .browser-header {
+            height: 50px;
+            background: linear-gradient(135deg, #5a67d8 0%, #4c51bf 100%);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 8px;
+        }
+
+        .browser-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: white;
+            opacity: 0.8;
+            transition: all 0.3s;
+        }
+
+        .browser-dot:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .browser-content {
+            padding: 50px;
+            display: flex;
+            gap: 25px;
+            height: calc(100% - 50px);
+            align-items: flex-end;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(180deg, #48bb78 0%, #38a169 100%);
+            border-radius: 12px 12px 0 0;
+            animation: growBar 1.5s ease-out forwards;
+            transform-origin: bottom;
+            box-shadow: 0 -5px 20px rgba(72, 187, 120, 0.4);
+            position: relative;
+        }
+
+        .chart-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .chart-bar:nth-child(1) { height: 180px; animation-delay: 0.2s; }
+        .chart-bar:nth-child(2) { height: 140px; animation-delay: 0.4s; }
+        .chart-bar:nth-child(3) { height: 100px; animation-delay: 0.6s; }
+
+        @keyframes growBar {
+            from { transform: scaleY(0); opacity: 0; }
+            to { transform: scaleY(1); opacity: 1; }
+        }
+
+        .magnifying-glass {
+            position: absolute;
+            right: -100px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 220px;
+            height: 220px;
+            border: 18px solid #1a202c;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.15);
+            z-index: 10;
+            animation: float 3s ease-in-out infinite;
+            animation-delay: 0.5s;
+        }
+
+        .magnifying-handle {
+            position: absolute;
+            width: 18px;
+            height: 110px;
+            background: #1a202c;
+            bottom: -100px;
+            right: 25px;
+            transform: rotate(45deg);
+            border-radius: 15px;
+        }
+
+        .person-illustration {
+            position: absolute;
+            right: -120px;
+            bottom: -50px;
+            width: 140px;
+            height: 280px;
+            animation: float 3.5s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+
+        .person-body {
+            width: 70px;
+            height: 160px;
+            background: #1a202c;
+            border-radius: 35px;
+            position: absolute;
+            bottom: 0;
+            left: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .person-head {
+            width: 60px;
+            height: 60px;
+            background: #ffd93d;
+            border-radius: 50%;
+            position: absolute;
+            top: -70px;
+            left: 40px;
+            box-shadow: 0 5px 20px rgba(255, 217, 61, 0.4);
+        }
+
+        .person-hair {
+            width: 50px;
+            height: 35px;
+            background: #1a202c;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            top: -5px;
+            left: 5px;
+        }
+
+        .person-arm {
+            width: 18px;
+            height: 140px;
+            background: linear-gradient(135deg, #00e5d4 0%, #00c4ff 100%);
+            position: absolute;
+            right: -15px;
+            top: 25px;
+            border-radius: 12px;
+            transform: rotate(-45deg);
+            transform-origin: top;
+            box-shadow: 0 5px 20px rgba(0, 229, 212, 0.4);
+        }
+
+        .blob-shape {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            background: linear-gradient(135deg, #00e5d4 0%, #00c4ff 100%);
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            opacity: 0.5;
+            z-index: -1;
+            animation: blobMove 10s ease-in-out infinite;
+            filter: blur(40px);
+        }
+
+        @keyframes blobMove {
+            0%, 100% {
+                border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                border-radius: 70% 30% 50% 50% / 60% 40% 60% 40%;
+                transform: rotate(180deg) scale(1.1);
+            }
+        }
+
+        /* Section 2 Visual */
+        .phone-mockup {
+            width: 320px;
+            height: 640px;
+            background: #1a202c;
+            border-radius: 45px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+            position: relative;
+            padding: 18px;
+            animation: float 4s ease-in-out infinite;
+            animation-delay: 0.5s;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 32px;
+            overflow: hidden;
+        }
+
+        .phone-notch {
+            width: 160px;
+            height: 32px;
+            background: #1a202c;
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 0 0 20px 20px;
+        }
+
+        .phone-content {
+            padding: 55px 25px 25px;
+        }
+
+        .phone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .menu-icon {
+            width: 28px;
+            height: 3px;
+            background: #1a202c;
+            position: relative;
+            border-radius: 3px;
+        }
+
+        .menu-icon::before,
+        .menu-icon::after {
+            content: '';
+            position: absolute;
+            width: 28px;
+            height: 3px;
+            background: #1a202c;
+            border-radius: 3px;
+        }
+
+        .menu-icon::before { top: -9px; }
+        .menu-icon::after { top: 9px; }
+
+        .search-icon {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #1a202c;
+            border-radius: 50%;
+        }
+
+        .job-card {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            padding: 18px;
+            border-radius: 15px;
+            margin-bottom: 18px;
+            color: white;
+            animation: slideInLeft 0.6s ease-out;
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .job-card:hover {
+            transform: translateX(5px);
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .job-card:nth-child(2) { animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards; }
+        .job-card:nth-child(3) { animation-delay: 0.4s; opacity: 0; animation-fill-mode: forwards; }
+
+        .job-title {
+            height: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 6px;
+            width: 75%;
+            margin-bottom: 12px;
+        }
+
+        .job-details {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 6px;
+            width: 55%;
+        }
+
+        .blob-shape-2 {
+            position: absolute;
+            width: 550px;
+            height: 550px;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            opacity: 0.5;
+            z-index: -1;
+            left: -150px;
+            animation: blobMove2 12s ease-in-out infinite;
+            filter: blur(60px);
+        }
+
+        @keyframes blobMove2 {
+            0%, 100% {
+                border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+                transform: rotate(0deg);
+            }
+            50% {
+                border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+                transform: rotate(180deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .browser-window {
+                width: 90%;
+                height: 300px;
+            }
+
+            .phone-mockup {
+                width: 280px;
+                height: 560px;
+            }
+
+            .visual {
+                margin-top: 40px;
+            }
+
+            .file-upload-wrapper {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Section 1 -->
+    <div class="section section-1">
+        <div class="container">
+            <div class="content">
+                <div class="tagline">✨ Easiest way to find a perfect job</div>
+                <h1 class="title">RESUME PARSER<br>AND JOB<br>SUGGESTIONS</h1>
+                <form action="/upload_resume" method="POST" enctype="multipart/form-data">
+                    <div class="file-upload-section">
+                        <div class="file-upload-wrapper">
+                            <input type="file" name="resume" class="file-input" id="fileInput" accept=".pdf,.doc,.docx" required>
+                            <label for="fileInput" class="file-upload-label">
+                                <span class="file-icon">📄</span>
+                                <span class="file-text" id="fileText">Drop your resume here or click to browse</span>
+                            </label>
+                            <div class="file-name" id="fileName"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="cta-button"><span>Find Your Job</span></button>
+                </form>
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            <div class="visual">
+                <div class="blob-shape"></div>
+                <div class="browser-window">
+                    <div class="browser-header">
+                        <div class="browser-dot"></div>
+                        <div class="browser-dot"></div>
+                        <div class="browser-dot"></div>
+                    </div>
+                    <div class="browser-content">
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                    </div>
+                </div>
+                <div class="magnifying-glass">
+                    <div class="magnifying-handle"></div>
+                </div>
+                <div class="person-illustration">
+                    <div class="person-head">
+                        <div class="person-hair"></div>
+                    </div>
+                    <div class="person-body"></div>
+                    <div class="person-arm"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator" onclick="scrollToSection2()">
+            <div class="scroll-indicator-inner">
+                <div class="scroll-indicator-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="section section-2" id="section2">
+        <div class="container">
+            <div class="visual">
+                <div class="blob-shape-2"></div>
+                <div class="phone-mockup">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="phone-content">
+                            <div class="phone-header">
+                                <div class="menu-icon"></div>
+                                <div class="search-icon"></div>
+                            </div>
+                            <div class="job-card">
+                                <div class="job-title"></div>
+                                <div class="job-details"></div>
+                            </div>
+                            <div class="job-card">
+                                <div class="job-title"></div>
+                                <div class="job-details"></div>
+                            </div>
+                            <div class="job-card">
+                                <div class="job-title"></div>
+                                <div class="job-details"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <h1 class="title">FIND YOUR DREAM JOBS</h1>
+                <p class="description">
+                    The basic idea behind this project is to provide ease to people for finding the best jobs based on their skills that the person mentioned in their resume. It's very difficult for everyone to find out suitable jobs. The objective of this project is to suggest the top jobs from the dataset based on the skills of the person, first extracting the skills from the resume using pyresparser.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // File upload handling
+        const fileInput = document.getElementById('fileInput');
+        const fileText = document.getElementById('fileText');
+        const fileName = document.getElementById('fileName');
+
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                fileText.textContent = '✓ File selected';
+                fileName.textContent = file.name;
+            }
+        });
+
+        // Drag and drop
+        const fileLabel = document.querySelector('.file-upload-label');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, () => {
+                fileLabel.style.background = 'rgba(255, 255, 255, 0.3)';
+                fileLabel.style.borderColor = 'rgba(255, 255, 255, 1)';
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, () => {
+                fileLabel.style.background = 'rgba(255, 255, 255, 0.15)';
+                fileLabel.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            });
+        });
+
+        // Smooth scroll reveal
+        const sections = document.querySelectorAll('.section');
+        
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelector('.container').style.animation = 'fadeInUp 1s ease forwards';
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // Smooth scroll to section 2
+        function scrollToSection2() {
+            document.getElementById('section2').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
